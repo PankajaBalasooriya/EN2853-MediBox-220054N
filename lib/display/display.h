@@ -24,4 +24,5 @@ void display_init();
 void print_line(String text, int text_size, int row, int column);
 void print_time_now();
 
+
 #endif // DISPLAY_H

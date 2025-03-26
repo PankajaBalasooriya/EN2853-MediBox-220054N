@@ -101,7 +101,14 @@
       "left": -297.6,
       "attrs": { "value": "1000" }
     },
-    { "type": "wokwi-dht22", "id": "dht1", "top": -518.1, "left": -15, "attrs": {} }
+    { "type": "wokwi-dht22", "id": "dht1", "top": -566.1, "left": -149.4, "attrs": {} },
+    {
+      "type": "wokwi-resistor",
+      "id": "r7",
+      "top": -427.2,
+      "left": -67.75,
+      "attrs": { "value": "4700" }
+    }
   ],
   "connections": [
     [ "esp:TX", "$serialMonitor:RX", "", [] ],
@@ -111,8 +118,8 @@
     [ "esp:5", "bb1:36t.d", "green", [ "h0" ] ],
     [ "bb1:bp.50", "bb1:tp.50", "red", [ "v0" ] ],
     [ "bb1:11b.j", "esp:34", "green", [ "v0" ] ],
-    [ "esp:9", "oled1:SCL", "green", [ "h0" ] ],
-    [ "esp:8", "oled1:SDA", "green", [ "h0" ] ],
+    [ "esp:9", "oled1:SCL", "green", [ "h-19.71", "v130.24", "h105.44" ] ],
+    [ "esp:8", "oled1:SDA", "green", [ "h143.49", "v250.16" ] ],
     [ "bb1:tp.2", "bb3:tp.25", "red", [ "v0" ] ],
     [ "bb1:bp.1", "bb3:bp.25", "red", [ "v0" ] ],
     [ "bb1:bn.1", "bb3:bn.25", "black", [ "v0" ] ],
@@ -130,13 +137,14 @@
     [ "oled1:GND", "bb1:tn.37", "black", [ "v0" ] ],
     [ "oled1:VCC", "bb1:tp.38", "red", [ "v0" ] ],
     [ "bb1:24t.b", "bb1:tn.19", "black", [ "v0" ] ],
-    [ "bb1:20t.a", "esp:15", "green", [ "v0" ] ],
     [ "r3:1", "bb1:bp.1", "red", [ "v0" ] ],
     [ "bb1:13t.b", "bb1:tn.9", "black", [ "h-9.6", "v-38.3" ] ],
     [ "bb1:11t.b", "bb1:tn.8", "black", [ "v0" ] ],
     [ "esp:3V3.1", "bb1:tp.49", "red", [ "v-90.56", "h201.89" ] ],
     [ "esp:GND.2", "bb1:tn.48", "black", [ "v-4.16", "h105.94" ] ],
     [ "bb1:9t.b", "esp:35", "green", [ "v0" ] ],
+    [ "dht1:VCC", "bb1:tp.10", "red", [ "v0" ] ],
+    [ "dht1:GND", "bb1:tn.13", "black", [ "v0" ] ],
     [ "bz1:1", "bb1:29t.b", "", [ "$bb" ] ],
     [ "bz1:2", "bb1:30t.b", "", [ "$bb" ] ],
     [ "r1:1", "bb1:30t.c", "", [ "$bb" ] ],
@@ -169,9 +177,10 @@
     [ "r5:2", "bb3:16b.j", "", [ "$bb" ] ],
     [ "r6:1", "bb3:21b.j", "", [ "$bb" ] ],
     [ "r6:2", "bb3:27b.j", "", [ "$bb" ] ],
-    [ "dht1:VCC", "bb1:tp.10", "red", [ "v0" ] ],
-    [ "dht1:GND", "bb1:tn.13", "black", [ "v0" ] ],
-    [ "dht1:SDA", "esp:12", "green", [ "v0" ] ]
+    [ "dht1:SDA", "r7:1", "green", [ "v0" ] ],
+    [ "r7:2", "dht1:VCC", "red", [ "v27.95", "h-125.45" ] ],
+    [ "bb1:20t.a", "esp:16", "green", [ "v0" ] ],
+    [ "r7:1", "esp:15", "green", [ "v-29.65", "h221.35", "v57.6" ] ]
   ],
   "dependencies": {}
 }

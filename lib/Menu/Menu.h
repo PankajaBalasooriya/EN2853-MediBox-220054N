@@ -1,70 +1,34 @@
-#ifndef MENU_H
-#define MENU_H
+#ifndef ALARM_UI_H
+#define ALARM_UI_H
 
 #include <Arduino.h>
-#include "display.h"
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 #include "config.h"
 
 
-// Menu page enumeration
-enum MenuPage {
-    MAIN_MENU,
-    SET_TIMEZONE,
-    SET_ALARMS,
-    VIEW_ALARMS,
-    DELETE_ALARM,
-    TEMPERATURE_HUMIDITY,
-    SETTINGS
-};
+// UI Modes
+#define MODE_MAIN_MENU   0
+#define MODE_SUBMENU     1
+#define MODE_EXECUTE     2
+#define MODE_CLOCK       3
 
-class Menu {
-private:
-    MenuPage currentPage;
-    int selectedMenuItem;
-    int timeZoneOffset;
-    
-    // Alarm-related variables
-    struct Alarm {
-        bool isActive;
-        int hours;
-        int minutes;
-    };
-    Alarm alarms[2];
+// Main Menu Options
+#define MAX_MAIN_MENU_OPTIONS 5
 
-    // Private methods for menu navigation and handling
-    void displayMainMenu();
-    void displaySetTimezone();
-    void displaySetAlarms();
-    void displayViewAlarms();
-    void displayDeleteAlarm();
-    void displayTemperatureHumidity();
-    void displaySettings();
+// Function Prototypes
+void initAlarmUI();
+void updateUI();
+void checkButtons();
+void updateMainMenuUI();
+void executeMenuAction();
 
-    // Interrupt handlers
-    static void IRAM_ATTR handleUpButton();
-    static void IRAM_ATTR handleDownButton();
-    static void IRAM_ATTR handleOkButton();
-    static void IRAM_ATTR handleCancelButton();
+// Specific Menu Action Prototypes
+void setTimeZone();
+void addAlarm();
+void viewAlarms();
+void deleteAlarm();
 
-public:
-    Menu();
-    void init();
-    void processMenu();
-    
-    // Getter and setter methods
-    MenuPage getCurrentPage() const;
-    void setCurrentPage(MenuPage page);
-    
-    // Alarm management methods
-    void setAlarm(int alarmIndex, int hours, int minutes);
-    void deleteAlarm(int alarmIndex);
-    void viewAlarms();
-    
-    // Timezone management
-    void setTimeZone(int offset);
-    int getTimeZoneOffset() const;
-};
 
-extern Menu menu;  // Global menu object
-
-#endif // MENU_H
+#endif // ALARM_UI_H

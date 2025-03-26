@@ -13,7 +13,7 @@
 #include "display.h"
 #include "clock.h" 
 #include "Menu.h"
-
+#include "DHT22.h"
 
 
 extern int days;
@@ -30,6 +30,7 @@ extern int alarm_hours[];
 extern int alarm_minutes[];
 extern bool alarm_triggered[];
 
+extern volatile uint8_t uiMode;
 
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
@@ -37,25 +38,36 @@ DHTesp dhtSensor;
 
 
 
+
+
+
 void setup() {
-  // put your setup code here, to run once:
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD, 6);
+  display_init();
+
+  setupWiFi();
 
   configTime(UTC_OFFSET_LK, UTC_OFFSET_DST_LK, NTP_SERVER);
   
   initPins();
 
+  dhtSensor.setup(DHT11_DATA_PIN ,DHTesp::DHT22);
+
   Serial.begin(9600);
 
-  display_init();
-
-  //menu.init();
+  initAlarmUI();
+  
+  uiMode = MODE_CLOCK;
 
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  update_time_with_check_alarm();
+
+  if(uiMode == MODE_CLOCK){
+    update_time_with_check_alarm();
+  }
+  
+  checkButtons();
   
   
 }

@@ -1,4 +1,7 @@
 #include "display.h"
+#include "config.h"
+#include "DHT22.h"
+#include <Wire.h>
 
 void display_init(){
     if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)){
@@ -50,13 +53,7 @@ void print_time_now(){
     display.setCursor(centerX - (w/2), centerY - (h/2));
     display.print(timeStr);
     
-    // Optional: Add small date display at the bottom
-    // display.setTextSize(1);
-    // char dateStr[11];
-    // snprintf(dateStr, sizeof(dateStr), "%02d/%02d/2025", days, days); // Placeholder date
-    // display.getTextBounds(dateStr, 0, 0, &x1, &y1, &w, &h);
-    // display.setCursor(centerX - (w/2), centerY + (h*2));
-    // display.print(dateStr);
     
     display.display();
 }
+

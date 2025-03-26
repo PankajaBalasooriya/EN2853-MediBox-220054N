@@ -48,6 +48,7 @@ void update_time() {
 void update_time_with_check_alarm() {
     update_time();
     print_time_now();
+    
 
     if(alarm_enabled) {
         for(int i = 0; i < n_alarms; i++) {
