@@ -17,6 +17,8 @@
 // Main Menu Options
 #define MAX_MAIN_MENU_OPTIONS 5
 
+
+
 // Function Prototypes
 void initAlarmUI();
 void updateUI();

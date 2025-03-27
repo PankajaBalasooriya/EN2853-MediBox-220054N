@@ -16,7 +16,9 @@ void initPins(){
     pinMode(DHT11_DATA_PIN, INPUT);
 }
 
-
+long convertHoursToSeconds(float hours) {
+  return static_cast<long>(hours * 3600.0f);
+}
 
 void displayWiFiStatus(bool connected) {
     display.clearDisplay();
@@ -84,4 +86,6 @@ void displayWiFiStatus(bool connected) {
     display.display();
     delay(500);
   }
+  
+
   

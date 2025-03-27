@@ -14,6 +14,67 @@ volatile uint8_t menuScrollIndex = 0;
 unsigned long lastButtonPressTime = 0;
 const unsigned long DEBOUNCE_DELAY = 200; // 200ms debounce time
 
+// Global time zone variables
+const int NUM_TIME_ZONES = 51; // Total number of time zones including half-hour offsets
+volatile int currentTimeZoneIndex = 23; // Default to UTC (middle of the array)
+
+
+// Time zone array with UTC offsets and names
+const struct TimeZone {
+    float offset;      // Hours from UTC (-12.0 to +14.0)
+    const char* name;  // Descriptive name or representative city
+    long utcOffsetSeconds; // Offset in seconds for configTime()
+} timeZones[NUM_TIME_ZONES] = {
+    // Negative offsets (West of UTC)
+    {-12.0, "Baker Island, US", convertHoursToSeconds(-12.0)},
+    {-11.0, "Midway Island, US", convertHoursToSeconds(-11.0)},
+    {-10.0, "Hawaii", convertHoursToSeconds(-10.0)},
+    {-9.5, "Marquesas Islands", convertHoursToSeconds(-9.5)},
+    {-9.0, "Alaska", convertHoursToSeconds(-9.0)},
+    {-8.0, "Pacific Time (US & Canada)", convertHoursToSeconds(-8.0)},
+    {-7.0, "Mountain Time (US & Canada)", convertHoursToSeconds(-7.0)},
+    {-6.0, "Central Time (US & Canada)", convertHoursToSeconds(-6.0)},
+    {-5.0, "Eastern Time (US & Canada)", convertHoursToSeconds(-5.0)},
+    {-4.5, "Venezuela", convertHoursToSeconds(-4.5)},
+    {-4.0, "Atlantic Time (Canada)", convertHoursToSeconds(-4.0)},
+    {-3.5, "Newfoundland, Canada", convertHoursToSeconds(-3.5)},
+    {-3.0, "Buenos Aires, Argentina", convertHoursToSeconds(-3.0)},
+    {-2.0, "Mid-Atlantic", convertHoursToSeconds(-2.0)},
+    {-1.0, "Azores, Cape Verde", convertHoursToSeconds(-1.0)},
+    
+    // UTC
+    {0.0, "UTC/London", 0},
+    
+    // Positive offsets (East of UTC)
+    {1.0, "Paris, Berlin", convertHoursToSeconds(1.0)},
+    {2.0, "Athens, Cairo", convertHoursToSeconds(2.0)},
+    {3.0, "Moscow, Nairobi", convertHoursToSeconds(3.0)},
+    {3.5, "Tehran, Iran", convertHoursToSeconds(3.5)},
+    {4.0, "Dubai, Abu Dhabi", convertHoursToSeconds(4.0)},
+    {4.5, "Kabul, Afghanistan", convertHoursToSeconds(4.5)},
+    {5.0, "Islamabad, Karachi", convertHoursToSeconds(5.0)},
+    {5.5, "Mumbai, New Delhi", convertHoursToSeconds(5.5)},
+    {5.75, "Kathmandu, Nepal", convertHoursToSeconds(5.75)},
+    {6.0, "Dhaka, Bangladesh", convertHoursToSeconds(6.0)},
+    {6.5, "Yangon, Myanmar", convertHoursToSeconds(6.5)},
+    {7.0, "Bangkok, Jakarta", convertHoursToSeconds(7.0)},
+    {8.0, "Beijing, Singapore", convertHoursToSeconds(8.0)},
+    {8.75, "Eucla, Western Australia", convertHoursToSeconds(8.75)},
+    {9.0, "Tokyo, Seoul", convertHoursToSeconds(9.0)},
+    {9.5, "Darwin, Central Australia", convertHoursToSeconds(9.5)},
+    {10.0, "Sydney, Melbourne", convertHoursToSeconds(10.0)},
+    {10.5, "Lord Howe Island, Australia", convertHoursToSeconds(10.5)},
+    {11.0, "Solomon Islands", convertHoursToSeconds(11.0)},
+    {11.5, "Norfolk Island", convertHoursToSeconds(11.5)},
+    {12.0, "New Zealand", convertHoursToSeconds(12.0)},
+    {12.75, "Chatham Islands, NZ", convertHoursToSeconds(12.75)},
+    {13.0, "Tonga", convertHoursToSeconds(13.0)},
+    {14.0, "Kiribati (Line Islands)", convertHoursToSeconds(14.0)}
+};
+
+
+
+
 // Main Menu Items
 const char* mainMenu[MAX_MAIN_MENU_OPTIONS] = {
     "1: Set Time Zone",
@@ -145,6 +206,9 @@ void updateMainMenuUI() {
     display.display();
 }
 
+
+
+
 void executeMenuAction() {
     display.clearDisplay();
     display.setCursor(0, 0);
@@ -171,11 +235,139 @@ void executeMenuAction() {
     display.display();
 }
 
-// Placeholder implementations for menu actions
 void setTimeZone() {
-    display.println("Set Time Zone");
-    display.println("Use +/- buttons");
-    display.println("to adjust time zone");
+    bool selectingTimeZone = true;
+    unsigned long lastUpdateTime = 0;
+    unsigned long currentTime;
+
+    // Clear display and set initial state
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
+
+    while (selectingTimeZone) {
+        currentTime = millis();
+
+        // Update display periodically to show current selection
+        if (currentTime - lastUpdateTime >= 200) {  // Update every 200ms
+            display.clearDisplay();
+            display.setCursor(0, 0);
+            display.println("Select Time Zone:");
+            
+            // Show current time zone with offset
+            display.print("UTC");
+            if (timeZones[currentTimeZoneIndex].offset >= 0) {
+                display.print("+");
+            }
+            
+            // Handle float offset display
+            int intPart = abs(static_cast<int>(timeZones[currentTimeZoneIndex].offset));
+            int fracPart = abs(static_cast<int>((abs(timeZones[currentTimeZoneIndex].offset) - intPart) * 60));
+            
+            display.print(intPart);
+            if (fracPart > 0) {
+                display.print(":");
+                if (fracPart < 10) display.print("0");
+                display.print(fracPart);
+            }
+            display.print(" ");
+            display.println(timeZones[currentTimeZoneIndex].name);
+
+            display.println("\nUP/DOWN: Change");
+            display.println("OK: Confirm");
+            display.println("BACK: Cancel");
+
+            display.display();
+            lastUpdateTime = currentTime;
+        }
+
+        // Check button inputs
+        if (digitalRead(BTN_UP_PIN) == LOW) {
+            // Move to previous time zone with debounce
+            if (millis() - lastButtonPressTime > DEBOUNCE_DELAY) {
+                if (currentTimeZoneIndex > 0) {
+                    currentTimeZoneIndex--;
+                } else {
+                    // Wrap around to the last time zone
+                    currentTimeZoneIndex = NUM_TIME_ZONES - 1;
+                }
+                lastButtonPressTime = millis();
+            }
+        }
+        else if (digitalRead(BTN_DOWN_PIN) == LOW) {
+            // Move to next time zone with debounce
+            if (millis() - lastButtonPressTime > DEBOUNCE_DELAY) {
+                if (currentTimeZoneIndex < NUM_TIME_ZONES - 1) {
+                    currentTimeZoneIndex++;
+                } else {
+                    // Wrap around to the first time zone
+                    currentTimeZoneIndex = 0;
+                }
+                lastButtonPressTime = millis();
+            }
+        }
+        else if (digitalRead(BTN_OK_PIN) == LOW) {
+            // Confirm time zone selection
+            if (millis() - lastButtonPressTime > DEBOUNCE_DELAY) {
+                // Set the time zone using configTime
+                long utcOffset = timeZones[currentTimeZoneIndex].utcOffsetSeconds;
+                configTime(utcOffset, 0, NTP_SERVER);
+
+                // Clear display and show confirmation
+                display.clearDisplay();
+                display.setCursor(0, 0);
+                display.println("Time Zone Set:");
+                display.print("UTC");
+                if (timeZones[currentTimeZoneIndex].offset >= 0) {
+                    display.print("+");
+                }
+                
+                // Display offset with proper formatting
+                int intPart = abs(static_cast<int>(timeZones[currentTimeZoneIndex].offset));
+                int fracPart = abs(static_cast<int>((abs(timeZones[currentTimeZoneIndex].offset) - intPart) * 60));
+                
+                display.print(intPart);
+                if (fracPart > 0) {
+                    display.print(":");
+                    if (fracPart < 10) display.print("0");
+                    display.print(fracPart);
+                }
+                display.print(" ");
+                display.println(timeZones[currentTimeZoneIndex].name);
+                
+                display.println("\nSynchronizing...");
+                display.display();
+
+                // Wait for time synchronization
+                delay(2000);  // Give some time for NTP sync
+                
+                // Optional: Add error checking for time sync
+                time_t now = time(nullptr);
+                if (now > 1000) {
+                    display.println("Time Sync Success!");
+                } else {
+                    display.println("Time Sync Failed!");
+                }
+                display.display();
+                
+                delay(1500);  // Show confirmation for 1.5 seconds
+                selectingTimeZone = false;
+                uiMode = MODE_MAIN_MENU;
+                updateMainMenuUI();
+                
+                lastButtonPressTime = millis();
+            }
+        }
+        else if (digitalRead(BTN_BACK_PIN) == LOW) {
+            // Cancel time zone selection
+            if (millis() - lastButtonPressTime > DEBOUNCE_DELAY) {
+                uiMode = MODE_MAIN_MENU;
+                updateMainMenuUI();
+                selectingTimeZone = false;
+                lastButtonPressTime = millis();
+            }
+        }
+    }
 }
 
 void addAlarm() {

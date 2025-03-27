@@ -30,6 +30,7 @@
 
 
 void initPins();
+long convertHoursToSeconds(float hours);
 void displayWiFiStatus(bool connected);
 void setupWiFi();
   
