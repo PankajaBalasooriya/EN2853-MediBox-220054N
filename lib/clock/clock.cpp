@@ -136,9 +136,9 @@ void snooze_alarm(int snooze_minutes) {
     }
   }
 
-String get_time_string() {
-    char timeStr[9];
-    snprintf(timeStr, sizeof(timeStr), "%02d:%02d:%02d", hours, minutes, seconds);
-    return String(timeStr);
-}
+// String get_time_string() {
+//     char timeStr[9];
+//     snprintf(timeStr, sizeof(timeStr), "%02d:%02d:%02d", hours, minutes, seconds);
+//     return String(timeStr);
+// }
 

@@ -17,7 +17,7 @@ const unsigned long DEBOUNCE_DELAY = 200; // 200ms debounce time
 
 // Global time zone variables
 const int NUM_TIME_ZONES = 51; // Total number of time zones including half-hour offsets
-volatile int currentTimeZoneIndex = 23; // Default to UTC (middle of the array)
+volatile int currentTimeZoneIndex = 23; 
 
 
 // Time zone array with UTC offsets and names
