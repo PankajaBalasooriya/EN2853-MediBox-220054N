@@ -20,6 +20,8 @@ TempAndHumidity get_DHT11_Data();
 float get_temp();
 float get_humidity();
 
+void monitor_temp_humidity();
+
 
 
 

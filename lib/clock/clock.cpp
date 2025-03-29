@@ -5,6 +5,7 @@
 #include <WiFi.h>
 #include <NTPClient.h>
 #include <WiFiUdp.h>
+#include "DHT22.h"
 
 // Define the variables here
 int days = 0;
@@ -48,20 +49,32 @@ void update_time() {
 void update_time_with_check_alarm() {
     update_time();
     print_time_now();
-    
 
+    // Check temperature and humidity periodically
+    static unsigned long lastEnvCheck = 0;
+    if (millis() - lastEnvCheck > 30000) {  // Check every 30 seconds
+        monitor_temp_humidity();
+        lastEnvCheck = millis();
+    }
+    
     if(alarm_enabled) {
         for(int i = 0; i < n_alarms; i++) {
             if(!alarm_triggered[i] && 
                alarm_hours[i] == hours && 
                alarm_minutes[i] == minutes) {
                 display.clearDisplay();
-                print_line("MEDICINE TIME!", 1,0,2);    
+                
+                // Display medicine pill bitmap
+                display_medicine_icon();
+                
+                // Display message
+                print_line("MEDICINE TIME!", 1, 35, 15);
+                print_line("Take your medication now", 1, 55, 5);
+                
                 digitalWrite(LED_1, HIGH);
-
                 ring_alarm();
-
-                digitalWrite(LED_1 ,LOW);;
+                digitalWrite(LED_1, LOW);
+                
                 display.clearDisplay(); 
                 alarm_triggered[i] = true;
             }   
@@ -93,27 +106,35 @@ void delete_alarm(int alarm_index) {
     }
 }
 
-void snooze_alarm(int snooze_minutes) {  // Remove default argument here
-  for(int i = 0; i < n_alarms; i++) {
-      if(alarm_triggered[i]) {
-          // Add snooze time
-          alarm_minutes[i] += snooze_minutes;
-          
-          // Handle hour rollover
-          if(alarm_minutes[i] >= 60) {
-              alarm_hours[i]++;
-              alarm_minutes[i] -= 60;
-          }
-          
-          // Handle day rollover
-          if(alarm_hours[i] >= 24) {
-              alarm_hours[i] -= 24;
-          }
-          
-          alarm_triggered[i] = false;
-      }
+void snooze_alarm(int snooze_minutes) {
+    for(int i = 0; i < n_alarms; i++) {
+        if(alarm_triggered[i]) {
+            // Get current time
+            struct tm timeinfo;
+            getLocalTime(&timeinfo);
+            
+            // Calculate new alarm time
+            int new_minutes = timeinfo.tm_min + snooze_minutes;
+            int new_hours = timeinfo.tm_hour;
+            
+            // Handle hour rollover
+            if(new_minutes >= 60) {
+                new_hours++;
+                new_minutes -= 60;
+            }
+            
+            // Handle day rollover
+            if(new_hours >= 24) {
+                new_hours -= 24;
+            }
+            
+            // Set new alarm time
+            alarm_hours[i] = new_hours;
+            alarm_minutes[i] = new_minutes;
+            alarm_triggered[i] = false;
+        }
+    }
   }
-}
 
 String get_time_string() {
     char timeStr[9];

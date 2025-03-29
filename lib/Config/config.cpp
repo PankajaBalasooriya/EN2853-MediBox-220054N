@@ -87,5 +87,33 @@ void displayWiFiStatus(bool connected) {
     delay(500);
   }
   
-
+  // Function to display the medicine pill bitmap with animation
+  void display_medicine_icon() {
+	  // Display the medicine bitmap in the center top of the screen
+	  display.drawBitmap(
+		  (SCREEN_WIDTH - 32) / 2,  // Center horizontally
+		  2,                        // Position at top with small margin
+		  medicineBitmap,           // Bitmap data
+		  32,                       // Width
+		  32,                       // Height
+		  WHITE                     // Color
+	  );
+	  display.display();
+	  
+	  // Simple animation: Blink the icon
+	  for (int i = 0; i < 3; i++) {
+		  delay(300);
+		  display.clearDisplay();
+		  display.display();
+		  delay(300);
+		  display.drawBitmap(
+			  (SCREEN_WIDTH - 32) / 2,
+			  2,
+			  medicineBitmap,
+			  32, 32,
+			  WHITE
+		  );
+		  display.display();
+	  }
+  }
   
