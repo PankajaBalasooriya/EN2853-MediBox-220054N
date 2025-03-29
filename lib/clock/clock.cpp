@@ -18,7 +18,7 @@ unsigned long timeLast = 0;
 bool alarm_enabled = true;
 int n_alarms = 2;
 int alarm_hours[] = {0, 0};
-int alarm_minutes[] = {1, 0};
+int alarm_minutes[] = {0, 0};
 bool alarm_triggered[] = {false, false};
 
 

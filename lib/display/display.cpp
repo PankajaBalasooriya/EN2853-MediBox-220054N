@@ -29,16 +29,41 @@ void print_line(String text, int text_size, int row, int column){
     display.display();
 }
 
-void print_time_now(){
+// void print_time_now(){
+//     display.clearDisplay();
+    
+//     // Set a larger text size for hours and minutes
+//     display.setTextSize(2);
+//     display.setTextColor(SSD1306_WHITE);
+    
+//     // Position for time
+//     int centerX = SCREEN_WIDTH / 2;
+//     int centerY = SCREEN_HEIGHT / 2;
+    
+//     // Create time string with leading zeros
+//     char timeStr[10];
+//     snprintf(timeStr, sizeof(timeStr), "%02d:%02d:%02d", hours, minutes, seconds);
+    
+//     // Measure text width to center it
+//     int16_t x1, y1;
+//     uint16_t w, h;
+//     display.getTextBounds(timeStr, 0, 0, &x1, &y1, &w, &h);
+    
+//     // Center the time display
+//     display.setCursor(centerX - (w/2), centerY - (h/2));
+//     display.print(timeStr);
+    
+    
+//     display.display();
+// }
+
+
+void print_time_now() {
     display.clearDisplay();
     
     // Set a larger text size for hours and minutes
     display.setTextSize(2);
     display.setTextColor(SSD1306_WHITE);
-    
-    // Position for time
-    int centerX = SCREEN_WIDTH / 2;
-    int centerY = SCREEN_HEIGHT / 2;
     
     // Create time string with leading zeros
     char timeStr[10];
@@ -49,11 +74,43 @@ void print_time_now(){
     uint16_t w, h;
     display.getTextBounds(timeStr, 0, 0, &x1, &y1, &w, &h);
     
-    // Center the time display
-    display.setCursor(centerX - (w/2), centerY - (h/2));
+    // Center the time display at the top
+    display.setCursor((SCREEN_WIDTH - w) / 2, 0);
     display.print(timeStr);
     
+    // Switch to smaller text for date and sensor readings
+    display.setTextSize(1);
+    
+    // Get current date information
+    struct tm timeinfo;
+    getLocalTime(&timeinfo);
+    
+    // Format and display date (DD/MM/YYYY)
+    char dateStr[16];
+    strftime(dateStr, sizeof(dateStr), "%d/%m/%Y", &timeinfo);
+    
+    // Center the date
+    display.getTextBounds(dateStr, 0, 0, &x1, &y1, &w, &h);
+    display.setCursor((SCREEN_WIDTH - w) / 2, 20);
+    display.print(dateStr);
+    
+    // Add horizontal line separator
+    display.drawLine(0, 30, SCREEN_WIDTH, 30, SSD1306_WHITE);
+    
+    // Get current temperature and humidity
+    TempAndHumidity data = get_DHT11_Data();
+    
+    // Format and display temperature
+    char tempStr[16];
+    snprintf(tempStr, sizeof(tempStr), "Temp: %.1f C", data.temperature);
+    display.setCursor(5, 35);
+    display.print(tempStr);
+    
+    // Format and display humidity
+    char humStr[16];
+    snprintf(humStr, sizeof(humStr), "Humidity: %.1f%%", data.humidity);
+    display.setCursor(5, 45);
+    display.print(humStr);
     
     display.display();
 }
-

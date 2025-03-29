@@ -1,6 +1,7 @@
 #include "Menu.h"
 #include "config.h"
 #include "display.h"
+#include "clock.h"
 
 // Global Variables
 extern Adafruit_SSD1306 display;
@@ -371,18 +372,295 @@ void setTimeZone() {
 }
 
 void addAlarm() {
-    display.println("Add New Alarm");
-    display.println("Select hour, minute");
-    display.println("and AM/PM");
+    int selectedHour = 0;
+    int selectedMinute = 0;
+    bool selectingHour = true;
+    bool selectingMinute = false;
+    int availableAlarmIndex = -1;
+
+    // Find first available alarm slot
+    for (int i = 0; i < n_alarms; i++) {
+        if (alarm_hours[i] == 0 && alarm_minutes[i] == 0) {
+            availableAlarmIndex = i;
+            break;
+        }
+    }
+
+    if (availableAlarmIndex == -1) {
+        display.clearDisplay();
+        display.setTextSize(1);
+        display.setCursor(0, 0);
+        display.println("No more alarms");
+        display.println("can be added.");
+        display.display();
+        delay(2000);
+        uiMode = MODE_MAIN_MENU;
+        updateMainMenuUI();
+        return;
+    }
+
+    unsigned long lastUpdateTime = 0;
+    unsigned long currentTime;
+
+    while (selectingHour || selectingMinute) {
+        currentTime = millis();
+
+        // Update display periodically
+        if (currentTime - lastUpdateTime >= 200) {
+            display.clearDisplay();
+            display.setTextSize(1);
+            display.setCursor(0, 0);
+            display.println("Add New Alarm");
+            
+            if (selectingHour) {
+                display.setTextSize(1);
+                display.print("Hour: ");
+                display.setTextColor(SSD1306_BLACK, SSD1306_WHITE);
+                display.print(selectedHour);
+                display.setTextColor(SSD1306_WHITE);
+                display.print("  Minute: ");
+                display.print(selectedMinute);
+            } else {
+                display.setTextSize(1);
+                display.print("Hour: ");
+                display.print(selectedHour);
+                display.print("  Minute: ");
+                display.setTextColor(SSD1306_BLACK, SSD1306_WHITE);
+                display.print(selectedMinute);
+                display.setTextColor(SSD1306_WHITE);
+            }
+
+            display.println("\n\nUP/DOWN: Change");
+            display.println("OK: Select");
+            display.println("BACK: Cancel");
+
+            display.display();
+            lastUpdateTime = currentTime;
+        }
+
+        // Button handling
+        if (digitalRead(BTN_UP_PIN) == LOW) {
+            if (millis() - lastButtonPressTime > DEBOUNCE_DELAY) {
+                if (selectingHour) {
+                    selectedHour = (selectedHour + 1) % 24;
+                } else {
+                    selectedMinute = (selectedMinute + 1) % 60;
+                }
+                lastButtonPressTime = millis();
+            }
+        }
+        else if (digitalRead(BTN_DOWN_PIN) == LOW) {
+            if (millis() - lastButtonPressTime > DEBOUNCE_DELAY) {
+                if (selectingHour) {
+                    selectedHour = (selectedHour - 1 + 24) % 24;
+                } else {
+                    selectedMinute = (selectedMinute - 1 + 60) % 60;
+                }
+                lastButtonPressTime = millis();
+            }
+        }
+        else if (digitalRead(BTN_OK_PIN) == LOW) {
+            if (millis() - lastButtonPressTime > DEBOUNCE_DELAY) {
+                if (selectingHour) {
+                    selectingHour = false;
+                    selectingMinute = true;
+                } else {
+                    // Set the alarm
+                    if (set_alarm(availableAlarmIndex, selectedHour, selectedMinute)) {
+                        display.clearDisplay();
+                        display.setCursor(0, 0);
+                        display.println("Alarm Set:");
+                        display.print(selectedHour);
+                        display.print(":");
+                        if (selectedMinute < 10) display.print("0");
+                        display.println(selectedMinute);
+                        display.display();
+                        delay(1500);
+                    }
+                    uiMode = MODE_MAIN_MENU;
+                    updateMainMenuUI();
+                    return;
+                }
+                lastButtonPressTime = millis();
+            }
+        }
+        else if (digitalRead(BTN_BACK_PIN) == LOW) {
+            if (millis() - lastButtonPressTime > DEBOUNCE_DELAY) {
+                uiMode = MODE_MAIN_MENU;
+                updateMainMenuUI();
+                return;
+            }
+        }
+    }
 }
 
 void viewAlarms() {
-    display.println("View Existing");
-    display.println("Alarms");
+    int displayPage = 0;
+    unsigned long lastUpdateTime = 0;
+    unsigned long currentTime;
+
+    while (uiMode == MODE_EXECUTE) {
+        currentTime = millis();
+
+        // Update display periodically
+        if (currentTime - lastUpdateTime >= 200) {
+            display.clearDisplay();
+            display.setCursor(0, 0);
+            display.println("Existing Alarms:");
+
+            int alarmsFound = 0;
+            for (int i = 0; i < n_alarms; i++) {
+                if (alarm_hours[i] != 0 || alarm_minutes[i] != 0) {
+                    display.print(i + 1);
+                    display.print(": ");
+                    if (alarm_hours[i] < 10) display.print("0");
+                    display.print(alarm_hours[i]);
+                    display.print(":");
+                    if (alarm_minutes[i] < 10) display.print("0");
+                    display.println(alarm_minutes[i]);
+                    alarmsFound++;
+                }
+            }
+
+            if (alarmsFound == 0) {
+                display.println("No alarms set.");
+            }
+
+            display.println("\nBACK: Return");
+            display.display();
+            lastUpdateTime = currentTime;
+        }
+
+        // Button handling
+        if (digitalRead(BTN_BACK_PIN) == LOW) {
+            if (millis() - lastButtonPressTime > DEBOUNCE_DELAY) {
+                uiMode = MODE_MAIN_MENU;
+                updateMainMenuUI();
+                return;
+            }
+        }
+    }
 }
 
 void deleteAlarm() {
-    display.println("Delete Alarm");
-    display.println("Select alarm to");
-    display.println("remove");
+    int selectedAlarmIndex = 0;
+    unsigned long lastUpdateTime = 0;
+    unsigned long currentTime;
+
+    while (uiMode == MODE_EXECUTE) {
+        currentTime = millis();
+
+        // Update display periodically
+        if (currentTime - lastUpdateTime >= 200) {
+            display.clearDisplay();
+            display.setCursor(0, 0);
+            display.println("Delete Alarm");
+
+            int validAlarms[n_alarms];
+            int validAlarmsCount = 0;
+
+            // Find valid alarms
+            for (int i = 0; i < n_alarms; i++) {
+                if (alarm_hours[i] != 0 || alarm_minutes[i] != 0) {
+                    validAlarms[validAlarmsCount] = i;
+                    validAlarmsCount++;
+                }
+            }
+
+            if (validAlarmsCount == 0) {
+                display.println("No alarms to delete.");
+                display.println("\nBACK: Return");
+                display.display();
+                
+                // Wait for back button
+                if (digitalRead(BTN_BACK_PIN) == LOW) {
+                    if (millis() - lastButtonPressTime > DEBOUNCE_DELAY) {
+                        uiMode = MODE_MAIN_MENU;
+                        updateMainMenuUI();
+                        return;
+                    }
+                }
+                continue;
+            }
+
+            // Ensure selected index is within valid range
+            if (selectedAlarmIndex >= validAlarmsCount) {
+                selectedAlarmIndex = 0;
+            }
+
+            // Highlight selected alarm
+            for (int i = 0; i < validAlarmsCount; i++) {
+                if (i == selectedAlarmIndex) {
+                    display.setTextColor(SSD1306_BLACK, SSD1306_WHITE);
+                } else {
+                    display.setTextColor(SSD1306_WHITE);
+                }
+
+                display.print(validAlarms[i] + 1);
+                display.print(": ");
+                if (alarm_hours[validAlarms[i]] < 10) display.print("0");
+                display.print(alarm_hours[validAlarms[i]]);
+                display.print(":");
+                if (alarm_minutes[validAlarms[i]] < 10) display.print("0");
+                display.println(alarm_minutes[validAlarms[i]]);
+            }
+
+            display.setTextColor(SSD1306_WHITE);
+            display.println("\nUP/DOWN: Select");
+            display.println("OK: Delete");
+            display.println("BACK: Cancel");
+            display.display();
+            lastUpdateTime = currentTime;
+        }
+
+        // Button handling
+        if (digitalRead(BTN_UP_PIN) == LOW) {
+            if (millis() - lastButtonPressTime > DEBOUNCE_DELAY) {
+                selectedAlarmIndex = (selectedAlarmIndex - 1 + n_alarms) % n_alarms;
+                lastButtonPressTime = millis();
+            }
+        }
+        else if (digitalRead(BTN_DOWN_PIN) == LOW) {
+            if (millis() - lastButtonPressTime > DEBOUNCE_DELAY) {
+                selectedAlarmIndex = (selectedAlarmIndex + 1) % n_alarms;
+                lastButtonPressTime = millis();
+            }
+        }
+        else if (digitalRead(BTN_OK_PIN) == LOW) {
+            if (millis() - lastButtonPressTime > DEBOUNCE_DELAY) {
+                // Find the actual alarm index to delete
+                int validAlarms[n_alarms];
+                int validAlarmsCount = 0;
+
+                for (int i = 0; i < n_alarms; i++) {
+                    if (alarm_hours[i] != 0 || alarm_minutes[i] != 0) {
+                        validAlarms[validAlarmsCount] = i;
+                        validAlarmsCount++;
+                    }
+                }
+
+                if (selectedAlarmIndex < validAlarmsCount) {
+                    int alarmToDelete = validAlarms[selectedAlarmIndex];
+                    delete_alarm(alarmToDelete);
+
+                    display.clearDisplay();
+                    display.setCursor(0, 0);
+                    display.println("Alarm Deleted");
+                    display.display();
+                    delay(1500);
+                }
+
+                uiMode = MODE_MAIN_MENU;
+                updateMainMenuUI();
+                return;
+            }
+        }
+        else if (digitalRead(BTN_BACK_PIN) == LOW) {
+            if (millis() - lastButtonPressTime > DEBOUNCE_DELAY) {
+                uiMode = MODE_MAIN_MENU;
+                updateMainMenuUI();
+                return;
+            }
+        }
+    }
 }
