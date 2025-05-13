@@ -19,6 +19,7 @@
 //-------- Pin Assignment ------------------
 #define BUZZER 5
 #define LED_1 16
+#define LDR_PIN 14
 
 #define BTN_BACK_PIN 35
 #define BTN_OK_PIN 37
@@ -28,6 +29,22 @@
 #define BTN_CANCEL 35
 
 #define DHT11_DATA_PIN 15
+
+
+//----------Constants-------------------
+#define milisInaSecond 1000
+#define millisInaMinute 60000
+
+
+//----------Device Config-------------------
+#define ADC_RESOLUTION 4096
+#define ADC_RESOLUTION_BITS 12
+
+extern int LDRSamplingInterval;
+extern unsigned long LDRSamplingIntervalMilis;
+extern float averagingTimePeriodMinutes;
+extern unsigned long averagingTimePeriodMillis;
+
 
 
 void initPins();

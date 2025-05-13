@@ -97,7 +97,6 @@ void connectToBroker(){
     if( mqttClient.connect("MediBox-220054N")){
       Serial.println("Connected..");
       mqttClient.subscribe("ENTC-220054N-ON-OFF");
-      mqttClient.subscribe("ENTC-220054N-SCH-ON");
     }
     else{
       Serial.print("Failed ");
