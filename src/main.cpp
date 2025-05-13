@@ -7,6 +7,7 @@
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 #include <PubSubClient.h>
+#include <ESP32Servo.h>
 
 #include "Menu.h"
 #include "config.h"
@@ -16,6 +17,7 @@
 #include "Menu.h"
 #include "DHT22.h"
 #include "LDR.h"
+#include "Servo.h"
 
 
 extern int days;
@@ -90,9 +92,12 @@ void setup() {
   setupMqtt();
 
   initAlarmUI();
+
+  initSlidingWindow();
   
   uiMode = MODE_CLOCK;
 
+  //setAveragingTImePeriod(2);
 }
 
 void connectToBroker(){
@@ -102,6 +107,11 @@ void connectToBroker(){
       Serial.println("Connected..");
       mqttClient.subscribe("ENTC-220054N-ON-OFF");
       mqttClient.subscribe("ENTC-220054N-SCH-ON");
+      mqttClient.subscribe("ENTC-220054N-LIGHT-SAMPLING-INTERVAL");
+      mqttClient.subscribe("ENTC-220054N-LIGHT-DATA-SENDING-TIME");
+      mqttClient.subscribe("ENTC-220054N-MIN-ANGLE");
+      mqttClient.subscribe("ENTC-220054N-CONTROLLING-FACTOR");
+      mqttClient.subscribe("ENTC-220054N-MED-TEMP");
     }
     else{
       Serial.print("Failed ");
@@ -117,6 +127,7 @@ unsigned long previousMillisSendLightData = 0;
 
 
 void loop() {
+  
   // put your main code here, to run repeatedly:
   unsigned long currentMillis = millis();
 
@@ -139,9 +150,9 @@ void loop() {
 
   if (currentMillis - previousMillisSendLightData >= averagingTimePeriodMillis) {
     previousMillisSendLightData = currentMillis;
-    Serial.print("Temp Data Sent.");
+    Serial.print("Light Data Sent.");
     String(AverageLightIntensity(), 2).toCharArray(tempArr, 6);
-    mqttClient.publish("ENTC-TEMP-220054N", tempArr);
+    mqttClient.publish("ENTC-220054N-LIGHT-INTENSITY", tempArr);
   }
 
   //Serial.println(averagingTimePeriodMillis);

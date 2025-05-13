@@ -23,6 +23,7 @@ float AverageLightIntensity(){
 }
 
 void calculateNumberofReadings(){
+    cumalativeLDRReadings = 0.0f;
     numberOfReadings = 60 * averagingTimePeriodMinutes / LDRSamplingInterval;
     averagingTimePeriodMillis = int(averagingTimePeriodMinutes * 60000);
     LDRSamplingIntervalMilis = LDRSamplingInterval * 1000;

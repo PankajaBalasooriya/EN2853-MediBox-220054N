@@ -7,6 +7,8 @@
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 
+#include "LDR.h"
+
 #include <PubSubClient.h>
 
 //extern WiFiClient espClient;
@@ -104,7 +106,7 @@ void displayWiFiStatus(bool connected) {
 
     char payloadChar[length];
     for(int i = 0; i<length; i++){
-      Serial.print((char)payload[i]);
+      Serial.println((char)payload[i]);
       payloadChar[i] = (char)payload[i];
     }
 
@@ -122,6 +124,21 @@ void displayWiFiStatus(bool connected) {
         isScheduledON = true;
         scheduledOnTime =atol(payloadChar);
       }
+    }else if(strcmp(topic, "ENTC-220054N-LIGHT-SAMPLING-INTERVAL") == 0){
+      int samplingInterval = atoi(payloadChar);
+      setLightSamplingInterval(samplingInterval);
+    }else if(strcmp(topic, "ENTC-220054N-LIGHT-DATA-SENDING-TIME") == 0){
+      int dataSendingTime = atoi(payloadChar);
+      setAveragingTImePeriod(dataSendingTime);
+    }else if(strcmp(topic, "ENTC-220054N-MIN-ANGLE") == 0){
+      int minAngle = atoi(payloadChar);
+      setAveragingTImePeriod(minAngle);
+    }else if(strcmp(topic, "ENTC-220054N-CONTROLLING-FACTOR") == 0){
+      int controllingfactor = atoi(payloadChar);
+      setAveragingTImePeriod(controllingfactor);
+    }else if(strcmp(topic, "ENTC-220054N-MED-TEMP") == 0){
+      int medTemp = atoi(payloadChar);
+      setAveragingTImePeriod(medTemp);
     }
   }
 

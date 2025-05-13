@@ -29,6 +29,7 @@
 #define BTN_CANCEL 35
 
 #define DHT11_DATA_PIN 15
+#define SERVO_PIN 10
 
 
 //----------Constants-------------------

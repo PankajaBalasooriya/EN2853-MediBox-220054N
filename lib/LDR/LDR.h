@@ -42,6 +42,6 @@ void setLightSamplingInterval(int t);
  * 
  * @param t - Averaging time period in minutes
  */
-void setAveragingTimePeriod(float t);
+void setAveragingTImePeriod(float t);
 
 #endif // LDR_H
