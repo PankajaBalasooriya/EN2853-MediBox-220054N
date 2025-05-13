@@ -7,8 +7,12 @@
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 
+#include <PubSubClient.h>
 
-
+//extern WiFiClient espClient;
+extern PubSubClient mqttClient;
+extern bool isScheduledON;
+extern unsigned long scheduledOnTime;
 
 void initPins(){
     pinMode(LED_1, OUTPUT);
@@ -86,6 +90,40 @@ void displayWiFiStatus(bool connected) {
     display.display();
     delay(500);
   }
+
+  void reciveCallback(char* topic, byte* payload, unsigned int length){
+    Serial.print("Message Arrived [");
+    Serial.print(topic);
+    Serial.print("] ");
+
+    char payloadChar[length];
+    for(int i = 0; i<length; i++){
+      Serial.print((char)payload[i]);
+      payloadChar[i] = (char)payload[i];
+    }
+
+    if(strcmp(topic, "ENTC-220054N-ON-OFF") == 0){
+      if(payloadChar[0] == '1'){
+        Serial.println("ON");
+      }
+      else{
+        Serial.println("OFF");
+      }
+    }else if(strcmp(topic, "ENTC-220054N-SCH-ON") == 0){
+      if(payloadChar[0] = 'N'){
+        isScheduledON = false;
+      }else{
+        isScheduledON = true;
+        scheduledOnTime =atol(payloadChar);
+      }
+    }
+  }
+
+  void setupMqtt(){
+    mqttClient.setServer("test.mosquitto.org", 1883);
+    mqttClient.setCallback(reciveCallback);
+  }
+
   
   // Function to display the medicine pill bitmap with animation
   void display_medicine_icon() {

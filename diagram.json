@@ -101,13 +101,20 @@
       "left": -259.2,
       "attrs": { "value": "1000" }
     },
-    { "type": "wokwi-dht22", "id": "dht1", "top": -546.9, "left": -120.6, "attrs": {} },
+    { "type": "wokwi-dht22", "id": "dht1", "top": -527.7, "left": -341.4, "attrs": {} },
     {
       "type": "wokwi-resistor",
       "id": "r7",
       "top": -255.25,
-      "left": -19.2,
+      "left": -230.4,
       "attrs": { "value": "4700" }
+    },
+    {
+      "type": "wokwi-photoresistor-sensor",
+      "id": "ldr1",
+      "top": -505.6,
+      "left": -124,
+      "attrs": {}
     }
   ],
   "connections": [
@@ -180,7 +187,10 @@
     [ "r5:1", "bb3:10b.j", "", [ "$bb" ] ],
     [ "r5:2", "bb3:16b.j", "", [ "$bb" ] ],
     [ "r6:1", "bb3:21b.j", "", [ "$bb" ] ],
-    [ "r6:2", "bb3:27b.j", "", [ "$bb" ] ]
+    [ "r6:2", "bb3:27b.j", "", [ "$bb" ] ],
+    [ "bb1:tp.16", "ldr1:VCC", "red", [ "v0" ] ],
+    [ "bb1:tn.17", "ldr1:GND", "black", [ "v0" ] ],
+    [ "ldr1:AO", "esp:14", "green", [ "h105.6", "v172.1" ] ]
   ],
   "dependencies": {}
 }

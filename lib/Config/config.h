@@ -3,6 +3,7 @@
 
 #include "Arduino.h"
 
+
 //--------Wifi Configuration------------------
 #define WIFI_SSID "Wokwi-GUEST"
 #define WIFI_PASSWORD ""
@@ -33,6 +34,8 @@ void initPins();
 long convertHoursToSeconds(float hours);
 void displayWiFiStatus(bool connected);
 void setupWiFi();
+void setupMqtt();
+void reciveCallback(char* topic, byte* payload, unsigned int length);
   
 
 

@@ -6,6 +6,7 @@
 #include <WiFi.h>
 #include <NTPClient.h>
 #include <WiFiUdp.h>
+#include <PubSubClient.h>
 
 #include "Menu.h"
 #include "config.h"
@@ -32,19 +33,47 @@ extern bool alarm_triggered[];
 
 extern volatile uint8_t uiMode;
 
+char tempArr[6];
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 DHTesp dhtSensor;
 
 
+WiFiClient espClient;
+PubSubClient mqttClient(espClient);
 
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP);
 
+bool isScheduledON = false;
 
+unsigned long scheduledOnTime;
+
+unsigned long getTime(){
+  timeClient.update();
+  return timeClient.getEpochTime();
+}
+
+void checkSchedule(){
+  if(isScheduledON){
+    unsigned long currentTime = getTime();
+    if(currentTime > scheduledOnTime){
+      //buzzer on
+      isScheduledON = false;
+      Serial.println("Scheduled On!");
+    }
+  }
+}
 
 void setup() {
+
   display_init();
 
   setupWiFi();
+  
+  timeClient.begin();
+  timeClient.setTimeOffset(5.5 * 3600);
+  
 
   configTime(UTC_OFFSET_LK, UTC_OFFSET_DST_LK, NTP_SERVER);
   
@@ -54,11 +83,30 @@ void setup() {
 
   Serial.begin(9600);
 
+  setupMqtt();
+
   initAlarmUI();
   
   uiMode = MODE_CLOCK;
 
 }
+
+void connectToBroker(){
+  while(!mqttClient.connected()){
+    Serial.print("Attempting MQTT connection...");
+    if( mqttClient.connect("MediBox-220054N")){
+      Serial.println("Connected..");
+      mqttClient.subscribe("ENTC-220054N-ON-OFF");
+      mqttClient.subscribe("ENTC-220054N-SCH-ON");
+    }
+    else{
+      Serial.print("Failed ");
+      Serial.print(mqttClient.state());
+      delay(5000);
+    }
+  }
+}
+
 
 void loop() {
   // put your main code here, to run repeatedly:
@@ -69,5 +117,18 @@ void loop() {
   
   checkButtons();
   
+  if(!mqttClient.connected()){
+    connectToBroker();
+  }
+  
+  mqttClient.loop();
+  TempAndHumidity data = get_DHT11_Data();
+  String(data.temperature, 2).toCharArray(tempArr, 6);
+  Serial.println(tempArr);
+  mqttClient.publish("ENTC-TEMP-220054N", tempArr);
+
+  checkSchedule();
+
+  delay(1000);
   
 }
