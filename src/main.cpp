@@ -15,6 +15,7 @@
 #include "clock.h" 
 #include "Menu.h"
 #include "DHT22.h"
+#include "LDR.h"
 
 
 extern int days;
@@ -34,6 +35,7 @@ extern bool alarm_triggered[];
 extern volatile uint8_t uiMode;
 
 char tempArr[6];
+
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 DHTesp dhtSensor;
@@ -65,6 +67,7 @@ void checkSchedule(){
   }
 }
 
+
 void setup() {
 
   display_init();
@@ -78,6 +81,7 @@ void setup() {
   configTime(UTC_OFFSET_LK, UTC_OFFSET_DST_LK, NTP_SERVER);
   
   initPins();
+  analogReadResolution(ADC_RESOLUTION_BITS);
 
   dhtSensor.setup(DHT11_DATA_PIN ,DHTesp::DHT22);
 
@@ -107,28 +111,51 @@ void connectToBroker(){
   }
 }
 
+unsigned long previousMillisSampleLight = 0;
+unsigned long previousMillisSendLightData = 0;
+//unsigned long previousMillis1Sec = 0;
+
 
 void loop() {
   // put your main code here, to run repeatedly:
+  unsigned long currentMillis = millis();
 
   if(uiMode == MODE_CLOCK){
     update_time_with_check_alarm();
   }
   
   checkButtons();
-  
+
   if(!mqttClient.connected()){
     connectToBroker();
   }
   
   mqttClient.loop();
-  TempAndHumidity data = get_DHT11_Data();
-  String(data.temperature, 2).toCharArray(tempArr, 6);
-  Serial.println(tempArr);
-  mqttClient.publish("ENTC-TEMP-220054N", tempArr);
+
+  if (currentMillis - previousMillisSampleLight >= LDRSamplingIntervalMilis) {
+    previousMillisSampleLight = currentMillis;
+    readLightIntensity();
+  }
+
+  if (currentMillis - previousMillisSendLightData >= averagingTimePeriodMillis) {
+    previousMillisSendLightData = currentMillis;
+    Serial.print("Temp Data Sent.");
+    String(AverageLightIntensity(), 2).toCharArray(tempArr, 6);
+    mqttClient.publish("ENTC-TEMP-220054N", tempArr);
+  }
+
+  //Serial.println(averagingTimePeriodMillis);
+
+
+  
+  
+  // TempAndHumidity data = get_DHT11_Data();
+  // String(data.temperature, 2).toCharArray(tempArr, 6);
+  // //Serial.println(tempArr);
+  // mqttClient.publish("ENTC-TEMP-220054N", tempArr);
 
   checkSchedule();
 
-  delay(1000);
+  //delay(1000);
   
 }
