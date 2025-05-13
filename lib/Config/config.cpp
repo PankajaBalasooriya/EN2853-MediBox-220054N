@@ -16,7 +16,7 @@ extern unsigned long scheduledOnTime;
 
 int LDRSamplingInterval = 5;
 unsigned long LDRSamplingIntervalMilis = LDRSamplingInterval * milisInaSecond; 
-float averagingTimePeriodMinutes = 0.1; 
+float averagingTimePeriodMinutes = 2; 
 unsigned long averagingTimePeriodMillis = int(averagingTimePeriodMinutes * millisInaMinute);
 
 
@@ -126,7 +126,7 @@ void displayWiFiStatus(bool connected) {
   }
 
   void setupMqtt(){
-    mqttClient.setServer("test.mosquitto.org", 1883);
+    mqttClient.setServer("broker.hivemq.com", 1883);
     mqttClient.setCallback(reciveCallback);
   }
 
