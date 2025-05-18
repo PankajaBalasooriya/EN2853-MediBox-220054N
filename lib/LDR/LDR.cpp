@@ -30,8 +30,10 @@ float AverageLightIntensity(){
 
 void setLightSamplingInterval(int t){
     LDRSamplingInterval = t;
+    LDRSamplingIntervalMilis = LDRSamplingInterval * milisInaSecond; 
 }
 
 void setAveragingTImePeriod(float t){
     averagingTimePeriodMinutes = t;
+    averagingTimePeriodMillis = int(averagingTimePeriodMinutes * millisInaMinute);
 }
