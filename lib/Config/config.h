@@ -41,11 +41,7 @@
 #define ADC_RESOLUTION 4096
 #define ADC_RESOLUTION_BITS 12
 
-extern int LDRSamplingInterval;
-extern unsigned long LDRSamplingIntervalMilis;
-extern float averagingTimePeriodMinutes;
-extern unsigned long averagingTimePeriodMillis;
-extern unsigned long tempSendingIntervalMilis;
+
 
 
 

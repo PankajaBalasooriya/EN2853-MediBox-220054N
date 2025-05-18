@@ -18,6 +18,7 @@
 #include "DHT22.h"
 #include "LDR.h"
 #include "Servo.h"
+#include "MQTT.h"
 
 
 extern int days;
@@ -34,14 +35,23 @@ extern int alarm_hours[];
 extern int alarm_minutes[];
 extern bool alarm_triggered[];
 
+bool isScheduledON = false;
+
+unsigned long scheduledOnTime;
+
+extern float currentTemperature;
+extern float currentHumidity;
+
 extern volatile uint8_t uiMode;
+
+unsigned long previousMillisSampleLight = 0;
+unsigned long previousMillisSendLightData = 0;
+unsigned long previousMillisSendTempData = 0;
 
 char tempArr[6];
 
-
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 DHTesp dhtSensor;
-
 
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
@@ -49,12 +59,7 @@ PubSubClient mqttClient(espClient);
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP);
 
-bool isScheduledON = false;
 
-unsigned long scheduledOnTime;
-
-extern float currentTemperature;
-extern float currentHumidity;
 
 unsigned long getTime(){
   timeClient.update();
@@ -100,33 +105,7 @@ void setup() {
   
   uiMode = MODE_CLOCK;
 
-  //setAveragingTImePeriod(2);
 }
-
-void connectToBroker(){
-  while(!mqttClient.connected()){
-    Serial.print("Attempting MQTT connection...");
-    if( mqttClient.connect("MediBox-220054N")){
-      Serial.println("Connected..");
-      mqttClient.subscribe("ENTC-220054N-ON-OFF");
-      mqttClient.subscribe("ENTC-220054N-SCH-ON");
-      mqttClient.subscribe("ENTC-220054N-LIGHT-SAMPLING-INTERVAL");
-      mqttClient.subscribe("ENTC-220054N-LIGHT-DATA-SENDING-TIME");
-      mqttClient.subscribe("ENTC-220054N-MIN-ANGLE");
-      mqttClient.subscribe("ENTC-220054N-CONTROLLING-FACTOR");
-      mqttClient.subscribe("ENTC-220054N-MED-TEMP");
-    }
-    else{
-      Serial.print("Failed ");
-      Serial.print(mqttClient.state());
-      delay(5000);
-    }
-  }
-}
-
-unsigned long previousMillisSampleLight = 0;
-unsigned long previousMillisSendLightData = 0;
-unsigned long previousMillisSendTempData = 0;
 
 
 void loop() {
@@ -140,6 +119,8 @@ void loop() {
   
   checkButtons();
 
+  checkSchedule();
+
   if(!mqttClient.connected()){
     connectToBroker();
   }
@@ -150,6 +131,7 @@ void loop() {
     previousMillisSampleLight = currentMillis;
     readLightIntensity();
     UpdateWeatherData();
+    updateServoFromParameters();
   }
 
   if (currentMillis - previousMillisSendLightData >= averagingTimePeriodMillis) {
@@ -167,21 +149,4 @@ void loop() {
     String(currentHumidity, 2).toCharArray(tempArr, 6);
     mqttClient.publish("ENTC-HUMIDITY-220054N", tempArr);
   }
-
-
-
-  //Serial.println(averagingTimePeriodMillis);
-
-
-  
-  
-  // TempAndHumidity data = get_DHT11_Data();
-  // String(data.temperature, 2).toCharArray(tempArr, 6);
-  // //Serial.println(tempArr);
-  // mqttClient.publish("ENTC-TEMP-220054N", tempArr);
-
-  checkSchedule();
-
-  //delay(1000);
-  
 }

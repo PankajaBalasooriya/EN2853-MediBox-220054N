@@ -1,8 +1,9 @@
 #include "LDR.h"
+#include "MQTT.h"
 
 
 float cumalativeLDRReadings = 0.0f;
-int numberOfReadings = 60 * averagingTimePeriodMinutes / LDRSamplingInterval;
+uint16_t readingCount = 0;
 float CurrentLightIntensity = 0;
 
 
@@ -14,29 +15,23 @@ float readLightIntensity() {
   float normalized = 1.0f - (float)rawValue / (ADC_RESOLUTION - 1);
   
   cumalativeLDRReadings += normalized;
+  readingCount++;
   return normalized;
 }
 
 float AverageLightIntensity(){
-    float averageIntensity = cumalativeLDRReadings / numberOfReadings;
+    float averageIntensity = cumalativeLDRReadings / readingCount;
     cumalativeLDRReadings = 0.0f;
+    readingCount = 0;
     CurrentLightIntensity = averageIntensity;
     return averageIntensity;
 }
 
-void calculateNumberofReadings(){
-    cumalativeLDRReadings = 0.0f;
-    numberOfReadings = 60 * averagingTimePeriodMinutes / LDRSamplingInterval;
-    averagingTimePeriodMillis = int(averagingTimePeriodMinutes * 60000);
-    LDRSamplingIntervalMilis = LDRSamplingInterval * 1000;
-}
 
 void setLightSamplingInterval(int t){
     LDRSamplingInterval = t;
-    calculateNumberofReadings();
 }
 
 void setAveragingTImePeriod(float t){
     averagingTimePeriodMinutes = t;
-    calculateNumberofReadings();
 }
