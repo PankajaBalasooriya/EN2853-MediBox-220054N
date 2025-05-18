@@ -1,0 +1,66 @@
+[
+    {
+        "id": "ed8c3b6344b0f67f",
+        "type": "ui_chart",
+        "z": "032e762d94cd23c5",
+        "g": "d349917c1fbf14b8",
+        "name": "",
+        "group": "b93201ebc5e5b363",
+        "order": 2,
+        "width": 8,
+        "height": 5,
+        "label": "Light Intensity Graph",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "1",
+        "removeOlder": "1",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 680,
+        "y": 540,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b93201ebc5e5b363",
+        "type": "ui_group",
+        "name": "Light Intensity",
+        "tab": "e7025fa930b3d6a3",
+        "order": 3,
+        "disp": true,
+        "width": 8,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "e7025fa930b3d6a3",
+        "type": "ui_tab",
+        "name": "MediBox",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    }
+]
