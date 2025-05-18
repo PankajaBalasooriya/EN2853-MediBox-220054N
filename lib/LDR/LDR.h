@@ -4,6 +4,8 @@
 #include <Arduino.h>
 #include <config.h>
 
+extern float CurrentLightIntensity;
+
 /**
  * Function to read the LDR value and normalize it to a range of 0 to 1
  * 

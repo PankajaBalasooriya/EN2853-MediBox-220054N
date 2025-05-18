@@ -1,7 +1,17 @@
 #include "Servo.h"
 #include <math.h>
+#include "LDR.h"
 
 Servo SlidingWindow;
+
+float thetaOffset = 30.0;  // default minimum angle
+float gamma_ = 0.75;        // default controlling factor
+float Tmed = 30.0;         // default ideal medicine temperature
+extern float CurrentLightIntensity;
+extern float currentTemperature;
+extern int LDRSamplingInterval;
+extern float averagingTimePeriodMinutes;
+
 
 void initSlidingWindow(){
 
@@ -49,4 +59,20 @@ float calculateServoAngle(
   if (angle > 180) angle = 180;
 
   return angle;
+}
+
+void updateServoFromParameters() {
+  float angle = calculateServoAngle(
+    CurrentLightIntensity,
+    currentTemperature,
+    LDRSamplingInterval,
+    averagingTimePeriodMinutes * 60,
+    thetaOffset,
+    gamma_,
+    Tmed
+  );
+  Serial.print("Servo Angle: ");
+  Serial.println(int(angle));
+  
+  setServoAngle((int)angle);
 }

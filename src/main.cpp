@@ -53,6 +53,9 @@ bool isScheduledON = false;
 
 unsigned long scheduledOnTime;
 
+extern float currentTemperature;
+extern float currentHumidity;
+
 unsigned long getTime(){
   timeClient.update();
   return timeClient.getEpochTime();
@@ -123,7 +126,7 @@ void connectToBroker(){
 
 unsigned long previousMillisSampleLight = 0;
 unsigned long previousMillisSendLightData = 0;
-//unsigned long previousMillis1Sec = 0;
+unsigned long previousMillisSendTempData = 0;
 
 
 void loop() {
@@ -146,6 +149,7 @@ void loop() {
   if (currentMillis - previousMillisSampleLight >= LDRSamplingIntervalMilis) {
     previousMillisSampleLight = currentMillis;
     readLightIntensity();
+    UpdateWeatherData();
   }
 
   if (currentMillis - previousMillisSendLightData >= averagingTimePeriodMillis) {
@@ -154,6 +158,17 @@ void loop() {
     String(AverageLightIntensity(), 2).toCharArray(tempArr, 6);
     mqttClient.publish("ENTC-220054N-LIGHT-INTENSITY", tempArr);
   }
+
+  if (currentMillis - previousMillisSendTempData >= tempSendingIntervalMilis) {
+    previousMillisSendTempData = currentMillis;
+    String(currentTemperature, 2).toCharArray(tempArr, 6);
+    mqttClient.publish("ENTC-TEMP-220054N", tempArr);
+
+    String(currentHumidity, 2).toCharArray(tempArr, 6);
+    mqttClient.publish("ENTC-HUMIDITY-220054N", tempArr);
+  }
+
+
 
   //Serial.println(averagingTimePeriodMillis);
 

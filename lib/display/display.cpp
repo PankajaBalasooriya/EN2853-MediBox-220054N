@@ -3,6 +3,9 @@
 #include "DHT22.h"
 #include <Wire.h>
 
+float currentTemperature = 0;
+float currentHumidity = 0;
+
 void display_init(){
     if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)){
         Serial.println(F("SSD1306 allocation failed!"));
@@ -102,15 +105,24 @@ void print_time_now() {
     
     // Format and display temperature
     char tempStr[16];
-    snprintf(tempStr, sizeof(tempStr), "Temp: %.1f C", data.temperature);
+    snprintf(tempStr, sizeof(tempStr), "Temp: %.1f C", currentTemperature);
     display.setCursor(5, 35);
     display.print(tempStr);
+
     
     // Format and display humidity
     char humStr[16];
-    snprintf(humStr, sizeof(humStr), "Humidity: %.1f%%", data.humidity);
+    snprintf(humStr, sizeof(humStr), "Humidity: %.1f%%", currentHumidity);
     display.setCursor(5, 45);
     display.print(humStr);
+
     
     display.display();
+}
+
+void UpdateWeatherData(){
+    TempAndHumidity data = get_DHT11_Data();
+
+    currentTemperature = data.temperature;
+    currentHumidity = data.humidity;
 }

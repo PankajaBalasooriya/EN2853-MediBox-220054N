@@ -3,6 +3,7 @@
 
 float cumalativeLDRReadings = 0.0f;
 int numberOfReadings = 60 * averagingTimePeriodMinutes / LDRSamplingInterval;
+float CurrentLightIntensity = 0;
 
 
 float readLightIntensity() {
@@ -19,6 +20,7 @@ float readLightIntensity() {
 float AverageLightIntensity(){
     float averageIntensity = cumalativeLDRReadings / numberOfReadings;
     cumalativeLDRReadings = 0.0f;
+    CurrentLightIntensity = averageIntensity;
     return averageIntensity;
 }
 

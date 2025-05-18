@@ -20,9 +20,11 @@ extern int hours;
 extern int minutes;
 extern int seconds;
 
+extern float currentTemperature;
+
 void display_init();
 void print_line(String text, int text_size, int row, int column);
 void print_time_now();
-
+void UpdateWeatherData();
 
 #endif // DISPLAY_H

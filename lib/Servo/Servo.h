@@ -5,6 +5,11 @@
 #include <config.h>
 #include <ESP32Servo.h>
 
+
+extern float thetaOffset;
+extern float gamma_;
+extern float Tmed;
+
 void initSlidingWindow();
 void setServoAngle(int angle);
 float calculateServoAngle(
@@ -16,6 +21,6 @@ float calculateServoAngle(
   float gamma,      // Controlling factor (γ)
   float Tmed        // Ideal storage temperature (Tmed)
 );
-
+void updateServoFromParameters();
 
 #endif // SERVO_H

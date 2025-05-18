@@ -8,6 +8,7 @@
 #include <WiFiUdp.h>
 
 #include "LDR.h"
+#include "Servo.h"
 
 #include <PubSubClient.h>
 
@@ -20,6 +21,7 @@ int LDRSamplingInterval = 5;
 unsigned long LDRSamplingIntervalMilis = LDRSamplingInterval * milisInaSecond; 
 float averagingTimePeriodMinutes = 2; 
 unsigned long averagingTimePeriodMillis = int(averagingTimePeriodMinutes * millisInaMinute);
+unsigned long tempSendingIntervalMilis = 5000;
 
 
 void initPins(){
@@ -130,15 +132,16 @@ void displayWiFiStatus(bool connected) {
     }else if(strcmp(topic, "ENTC-220054N-LIGHT-DATA-SENDING-TIME") == 0){
       int dataSendingTime = atoi(payloadChar);
       setAveragingTImePeriod(dataSendingTime);
-    }else if(strcmp(topic, "ENTC-220054N-MIN-ANGLE") == 0){
-      int minAngle = atoi(payloadChar);
-      setAveragingTImePeriod(minAngle);
-    }else if(strcmp(topic, "ENTC-220054N-CONTROLLING-FACTOR") == 0){
-      int controllingfactor = atoi(payloadChar);
-      setAveragingTImePeriod(controllingfactor);
-    }else if(strcmp(topic, "ENTC-220054N-MED-TEMP") == 0){
-      int medTemp = atoi(payloadChar);
-      setAveragingTImePeriod(medTemp);
+    } else if(strcmp(topic, "ENTC-220054N-MIN-ANGLE") == 0){
+      thetaOffset = atof(payloadChar);
+      updateServoFromParameters();
+      //setServoAngle((int)thetaOffset);
+    } else if(strcmp(topic, "ENTC-220054N-CONTROLLING-FACTOR") == 0){
+      gamma_ = atof(payloadChar);
+      updateServoFromParameters();
+    } else if(strcmp(topic, "ENTC-220054N-MED-TEMP") == 0){
+      Tmed = atof(payloadChar);
+      updateServoFromParameters();
     }
   }
 

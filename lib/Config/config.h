@@ -45,6 +45,7 @@ extern int LDRSamplingInterval;
 extern unsigned long LDRSamplingIntervalMilis;
 extern float averagingTimePeriodMinutes;
 extern unsigned long averagingTimePeriodMillis;
+extern unsigned long tempSendingIntervalMilis;
 
 
 
