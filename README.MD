@@ -190,100 +190,14 @@ $$
 - Controlling factor adjustment (0-1)
 - Ideal storage temperature setting (10-40°C)
 
-## 🚀 Getting Started
 
-### Prerequisites
-- Arduino IDE with ESP32 board support
-- Node-RED installation
-- MQTT broker access (test.mosquitto.org)
-- Required Arduino libraries:
-  - WiFi
-  - NTPClient
-  - DHT sensor library
-  - Servo library
-  - SSD1306 (OLED display)
-  - PubSubClient (MQTT)
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/smart-medibox.git
-   cd smart-medibox
-   ```
-
-2. **Hardware Setup**
-   - Connect components according to the circuit diagram
-   - Update pin configurations in the code if needed
-
-3. **Software Configuration**
-   - Update WiFi credentials in the Arduino code
-   - Configure MQTT broker settings
-   - Import Node-RED flow from the provided JSON file
-
-4. **Upload and Run**
-   - Upload the Arduino sketch to ESP32
-   - Deploy the Node-RED flow
-   - Access the dashboard through Node-RED interface
-
-## 📁 Project Structure
-
-```
-smart-medibox/
-├── arduino/
-│   └── medibox_main.ino          # Main Arduino sketch
-├── node-red/
-│   └── dashboard_flow.json       # Node-RED flow configuration
-├── documentation/
-│   ├── circuit_diagram.png       # Hardware connection diagram
-│   └── demo_video.mp4            # Project demonstration
-├── README.md                     # This file
-└── LICENSE                       # Project license
-```
-
-## 🎥 Demo Video
-
-A comprehensive demonstration video is included showing:
-- System setup and configuration
-- Real-time monitoring capabilities
-- Dashboard interaction
-- Code walkthrough and explanation
-
-## 🏆 Assessment Criteria
-
-This project was evaluated based on:
-- **Technical Implementation** (80%): Sensor integration, MQTT communication, servo control
-- **User Interface** (10%): Dashboard design and functionality
-- **Code Quality** (10%): Documentation, structure, and creativity
-
-## 🔮 Future Enhancements
-
-- Mobile app integration
-- Multiple medication compartments
-- Voice notifications
-- Cloud data storage and analytics
-- Integration with healthcare providers
-- Advanced scheduling algorithms
-
-## 🤝 Contributing
-
-This project was developed as part of an academic assignment. Feel free to fork and enhance the functionality for your own projects.
-
-## 📜 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 👨‍💻 Author
-
-**John Doe**  
-Index No: XXXXX  
+**Pankaja Balasooriya**  
+Index No: 220054N
 EN2853: Embedded Systems and Applications  
 University of Moratuwa
 
 ## 📞 Contact
 
-For questions or suggestions, please open an issue in this repository or contact [your-email@example.com].
+For questions or suggestions, please contact balasooriyabapi.22@uom.lk.
 
 ---
-
-*This project demonstrates the integration of embedded systems, IoT technologies, and user interface design to create a practical healthcare solution.*
