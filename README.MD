@@ -34,23 +34,19 @@ The Smart Medibox is an embedded systems project developed as part of the EN2853
 - **LED**: Visual status indicators
 
 ## 📐 System Architecture
-
 ### Hardware Layer
 ```mermaid
 graph TB
     ESP32[ESP32 Microcontroller]
     
-    %% Input Sensors
-    DHT11[DHT11 SensorTemperature & Humidity]
-    LDR[LDR SensorLight Intensity 0-1]
-    Button[Push ButtonMenu Control & Alarm Stop]
+    DHT11[DHT11 Sensor - Temperature and Humidity]
+    LDR[LDR Sensor - Light Intensity 0-1]
+    Button[Push Button - Menu Control and Alarm Stop]
     
-    %% Output Actuators
-    Servo[Servo MotorShading Window 0-180°]
-    OLED[OLED Display 128x64Time & Status Display]
-    Buzzer[Buzzer & LEDAlarm & Warning Indicators]
+    Servo[Servo Motor - Shading Window 0-180 degrees]
+    OLED[OLED Display 128x64 - Time and Status Display]
+    Buzzer[Buzzer and LED - Alarm and Warning Indicators]
     
-    %% Connections
     DHT11 --> ESP32
     LDR --> ESP32
     Button --> ESP32
@@ -58,15 +54,6 @@ graph TB
     ESP32 --> Servo
     ESP32 --> OLED
     ESP32 --> Buzzer
-    
-    %% Styling
-    classDef sensor fill:#e1f5fe,stroke:#0277bd,stroke-width:2px
-    classDef actuator fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    classDef controller fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
-    
-    class DHT11,LDR,Button sensor
-    class Servo,OLED,Buzzer actuator
-    class ESP32 controller
 ```
 
 ### Communication Layer
@@ -74,31 +61,21 @@ graph TB
 graph TD
     ESP32[ESP32 Device]
     WiFi[WiFi Network]
-    MQTT[MQTT Brokertest.mosquitto.org]
-    NTP[NTP ServerTime Synchronization]
+    MQTT[MQTT Broker - test.mosquitto.org]
+    NTP[NTP Server - Time Synchronization]
     NodeRED[Node-RED Dashboard]
     
-    ESP32 |WiFi Connection| WiFi
+    ESP32 --> WiFi
     WiFi --> MQTT
     WiFi --> NTP
     
-    MQTT |MQTT Protocol| NodeRED
-    ESP32 |Publish/Subscribe| MQTT
-    ESP32 |Time Sync| NTP
+    MQTT --> NodeRED
+    ESP32 --> MQTT
+    ESP32 --> NTP
     
-    %% MQTT Topics
-    MQTT -.->|medibox/light/data| Topic1[Light Data]
-    MQTT -.->|medibox/control/params| Topic2[Control Parameters]
-    MQTT -.->|medibox/servo/angle| Topic3[Servo Angle]
-    
-    %% Styling
-    classDef network fill:#fff3e0,stroke:#f57c00,stroke-width:2px
-    classDef device fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
-    classDef topic fill:#fce4ec,stroke:#c2185b,stroke-width:1px
-    
-    class WiFi,MQTT,NTP,NodeRED network
-    class ESP32 device
-    class Topic1,Topic2,Topic3 topic
+    MQTT --> Topic1[medibox/light/data]
+    MQTT --> Topic2[medibox/control/params]
+    MQTT --> Topic3[medibox/servo/angle]
 ```
 
 ### Data Flow Architecture
@@ -106,26 +83,21 @@ graph TD
 graph TD
     Start([System Start])
     
-    %% Sensor Data Collection
-    LDR_Read[LDR ReadingEvery 5 seconds]
-    DHT_Read[DHT11 ReadingTemperature & Humidity]
+    LDR_Read[LDR Reading Every 5 seconds]
+    DHT_Read[DHT11 Reading Temperature and Humidity]
     
-    %% Data Processing
     LDR_Sample[5s Sampling]
     LDR_Avg[2min Average]
-    Health_Check[Health CheckTemp: 24-32°CHumidity: 65-80%]
+    Health_Check[Health Check Temp 24-32C Humidity 65-80 percent]
     
-    %% Control Algorithm
-    Control_Algo[Servo Control Algorithmθ = θ_offset + 180-θ_offset × I × γ × ln ts/tu × T/T_med]
+    Control_Algo[Servo Control Algorithm]
     
-    %% Outputs
-    MQTT_Pub[MQTT PublishLight Data]
-    Servo_Control[Servo Motor ControlWindow Position]
-    Alarm_Warning[Alarm/WarningNotifications]
+    MQTT_Pub[MQTT Publish Light Data]
+    Servo_Control[Servo Motor Control Window Position]
+    Alarm_Warning[Alarm Warning Notifications]
     
-    %% Dashboard Input
-    Dashboard_Input[Dashboard InputParameter Changes]
-    Param_Update[Parameter Updateθ_offset, γ, T_med]
+    Dashboard_Input[Dashboard Input Parameter Changes]
+    Param_Update[Parameter Update theta_offset gamma T_med]
     
     Start --> LDR_Read
     Start --> DHT_Read
@@ -143,37 +115,60 @@ graph TD
     
     Dashboard_Input --> Param_Update
     Param_Update --> Control_Algo
-    
-    %% Styling
-    classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
-    classDef algorithm fill:#fff3e0,stroke:#f57c00,stroke-width:2px
-    classDef output fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
-    classDef input fill:#fce4ec,stroke:#c2185b,stroke-width:2px
-    
-    class LDR_Read,DHT_Read,LDR_Sample,LDR_Avg,Health_Check process
-    class Control_Algo algorithm
-    class MQTT_Pub,Servo_Control,Alarm_Warning output
-    class Dashboard_Input,Param_Update input
 ```
+
+### Software Architecture
+```mermaid
+graph TB
+    subgraph App[Application Layer]
+        AlarmMgr[Alarm Manager - Schedule and Notifications]
+        MenuSys[Menu System - Navigation and User Input]
+        ControlLogic[Control Logic - Servo Control and Parameters]
+    end
+    
+    subgraph Comm[Communication Layer]
+        MQTTClient[MQTT Client - Pub Sub and JSON Messages]
+        WiFiMgr[WiFi Manager - Connection and Reconnection]
+        NTPClient[NTP Client - Time Sync and Timezone]
+    end
+    
+    subgraph HAL[Hardware Abstraction Layer]
+        SensorDrivers[Sensor Drivers - DHT11 and LDR ADC]
+        DisplayDriver[Display Driver - OLED SSD1306 and Graphics]
+        ActuatorControl[Actuator Control - Servo PWM and Buzzer Tone]
+    end
+    
+    AlarmMgr --> MQTTClient
+    MenuSys --> DisplayDriver
+    ControlLogic --> ActuatorControl
+    
+    MQTTClient --> WiFiMgr
+    WiFiMgr --> NTPClient
+    
+    SensorDrivers --> ControlLogic
+    DisplayDriver --> MenuSys
+    ActuatorControl --> ControlLogic
+```
+
 
 ## 🧮 Key Algorithms
 
 ### Servo Motor Control Algorithm
 The shaded sliding window position is calculated using the following equation:
 
-```
-θ = θ_offset + (180 - θ_offset) × I × γ × ln(t_s/t_u) × (T/T_med)
-```
+$$
+\theta = \theta_{\text{offset}} + (180 - \theta_{\text{offset}}) \times I \times \gamma \times \ln\left(\frac{t_s}{t_u}\right) \times \left(\frac{T}{T_{\text{med}}}\right)
+$$
 
-Where:
-- `θ`: Motor angle (0-180°)
-- `θ_offset`: Minimum angle (default: 30°)
-- `I`: Light intensity (0-1)
-- `γ`: Controlling factor (default: 0.75)
-- `t_s`: Sampling interval (seconds)
-- `t_u`: Sending interval (seconds)
-- `T`: Measured temperature (°C)
-- `T_med`: Ideal storage temperature (default: 30°C)
+### Where:
+- $\theta$ : Motor angle (0–180°)  
+- $\theta_{\text{offset}}$ : Minimum angle (default: 30°)  
+- $I$ : Light intensity (range: 0–1)  
+- $\gamma$ : Controlling factor (default: 0.75)  
+- $t_s$ : Sampling interval (seconds)  
+- $t_u$ : Sending interval (seconds)  
+- $T$ : Measured temperature (°C)  
+- $T_{\text{med}}$ : Ideal storage temperature (default: 30°C)
 
 ### Data Processing
 - **LDR Sampling**: Every 5 seconds (configurable)
